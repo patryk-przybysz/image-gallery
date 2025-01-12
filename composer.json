@@ -1,0 +1,24 @@
+{
+  "name": "198329/gallery",
+  "authors": [
+    {
+      "name": "Patryk Przybysz",
+      "email": "s198329@student.pg.edu.pl"
+    }
+  ],
+  "require": {
+    "mongodb/mongodb": "^1.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": "./src"
+    },
+    "files": [
+      "./src/utils/ArrayFunctions.php",
+      "./src/utils/ViewFunctions.php"
+    ]
+  },
+  "config": {
+    "optimize-autoloader": true
+  }
+}

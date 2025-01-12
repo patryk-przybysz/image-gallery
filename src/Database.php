@@ -1,0 +1,33 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App;
+
+// seeding https://www.mongodb.com/docs/php-library/v1.1/tutorial/example-data/
+
+/** @mixin \MongoDB\Database */
+class Database
+{
+    private static $db;
+
+
+    public static function selectCollection(string $collectionName)
+    {
+        if (!isset(self::$db)) {
+            $client = new \MongoDB\Client(
+                "mongodb://127.0.0.1:27017/wai",
+                [
+                    'username' => 'wai_web',
+                    'password' => 'w@i_w3b'
+                ]
+            );
+
+            self::$db = $client->selectDatabase('wai');
+
+            self::$db->images->createIndex(['title' => 'text'], ['background' => true]);
+        }
+
+        return self::$db->selectCollection($collectionName);
+    }
+}
