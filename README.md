@@ -11,7 +11,7 @@ A PHP web application for managing and displaying images, originally created as 
 
 ## Planned rewrite
 This project will be rewritten to incorporate more modern practices and technologies.
-- [ ] Development environment using Nix and [devenv](https://http://devenv.sh/)
+- [x] Development environment using Nix and [devenv](https://http://devenv.sh/)
 - [ ] Update to latest PHP version
 - [ ] Clean seperation of concerns into controllers, services, and repositories
 - [ ] Introduction of interfaces and abstractions
