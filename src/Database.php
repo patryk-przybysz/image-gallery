@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace App;
 
-// seeding https://www.mongodb.com/docs/php-library/v1.1/tutorial/example-data/
+use MongoDB\Client;
 
+// seeding https://www.mongodb.com/docs/php-library/v1.1/tutorial/example-data/
 /** @mixin \MongoDB\Database */
 class Database
 {
@@ -15,13 +16,8 @@ class Database
     public static function selectCollection(string $collectionName)
     {
         if (!isset(self::$db)) {
-            $client = new \MongoDB\Client(
-                "mongodb://127.0.0.1:27017/wai",
-                [
-                    'username' => 'wai_web',
-                    'password' => 'w@i_w3b'
-                ]
-            );
+            $uri = getenv("DB_URI");
+            $client = new Client($uri);
 
             self::$db = $client->selectDatabase('wai');
 

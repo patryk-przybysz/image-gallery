@@ -14,8 +14,8 @@
       "App\\": "./src"
     },
     "files": [
-      "./src/utils/ArrayFunctions.php",
-      "./src/utils/ViewFunctions.php"
+      "./src/Utils/ArrayFunctions.php",
+      "./src/Utils/ViewFunctions.php"
     ]
   },
   "config": {
