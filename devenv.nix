@@ -29,7 +29,7 @@
     enable = true;
     virtualHosts.":8080" = {
       extraConfig = ''
-          root * src/web 
+          root public
           php_fastcgi unix/${config.languages.php.fpm.pools.web.socket}
           file_server
       '';

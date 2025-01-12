@@ -33,7 +33,8 @@ class View
 
     public function render(): string
     {
-        $viewPath = __DIR__ . "/views/{$this->view}.php";
+        // TODO: this should be configurable
+        $viewPath = __DIR__ . "/../src/Views/{$this->view}.php";
 
         if (!file_exists($viewPath)) {
             throw new ViewNotFoundException();
