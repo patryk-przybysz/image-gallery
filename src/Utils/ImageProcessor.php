@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Utils;
 
+use App\Exceptions\ImageProcessingException;
 use App\Models\Image;
 
 class ImageProcessor
@@ -32,12 +33,30 @@ class ImageProcessor
 
     private function initializeProperties(Image $image)
     {
-        $this->originalFile = $image->file['tmp_name'];
+        $this->originalFile = $image->file['tmp_name'] ?? '';
+
+        if ($this->originalFile === '' || !is_file($this->originalFile)) {
+            throw new ImageProcessingException('Uploaded file is missing');
+        }
+
+        if (!FileHelper::isImage($this->originalFile)) {
+            throw new ImageProcessingException('Only JPEG and PNG images are supported');
+        }
+
         $this->full = $this->originalFile . '-full';
         $this->thumbnail = $this->originalFile . '-thumbnail';
         $this->ext = FileHelper::getExtension($this->originalFile);
         $createFn = "imagecreatefrom{$this->ext}";
+
+        if (!function_exists($createFn)) {
+            throw new ImageProcessingException('Image processing support is unavailable');
+        }
+
         $this->img = $createFn($this->originalFile);
+        if (!$this->img) {
+            throw new ImageProcessingException('Failed to load uploaded image');
+        }
+
         imagesavealpha($this->img, true);
     }
 
@@ -110,22 +129,39 @@ class ImageProcessor
 
         $imageFolderPath = "{$storagePath}/{$imageHash}";
 
-        // Emits warning if path already exists
-        mkdir($imageFolderPath, 0777, true);
+        $this->ensureDirectory($imageFolderPath);
 
         $originalPath = "{$imageFolderPath}/original.{$this->ext}";
         $fullPath = "{$imageFolderPath}/full.{$this->ext}";
         $thumbnailPath = "{$imageFolderPath}/thumbnail.{$this->ext}";
-        move_uploaded_file($this->originalFile, $originalPath);
 
-        // Can't use move_uploaded_file on a non-user created file
-        rename($this->full, $fullPath);
-        rename($this->thumbnail, $thumbnailPath);
+        if (!move_uploaded_file($this->originalFile, $originalPath)) {
+            throw new ImageProcessingException('Failed to store original upload');
+        }
+
+        if (!rename($this->full, $fullPath)) {
+            throw new ImageProcessingException('Failed to store processed image');
+        }
+
+        if (!rename($this->thumbnail, $thumbnailPath)) {
+            throw new ImageProcessingException('Failed to store thumbnail image');
+        }
 
         return [
             'original' => "/images/{$imageHash}/original.{$this->ext}",
             'full' => "/images/{$imageHash}/full.{$this->ext}",
             'thumbnail' => "/images/{$imageHash}/thumbnail.{$this->ext}"
         ];
+    }
+
+    private function ensureDirectory(string $path): void
+    {
+        if (is_dir($path)) {
+            return;
+        }
+
+        if (!mkdir($path, 0777, true) && !is_dir($path)) {
+            throw new ImageProcessingException('Failed to create image storage directory');
+        }
     }
 }

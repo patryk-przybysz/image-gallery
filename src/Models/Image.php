@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Exceptions\ImageProcessingException;
 use App\Utils\{FileHelper, ImageProcessor, ValidationSchema};
 use function App\Utils\empty_recursive;
 
@@ -165,8 +166,14 @@ class Image extends Model
         }
 
 
-        $imageProcessor = new ImageProcessor();
-        $image->paths = $imageProcessor->process($image);
+        try {
+            $imageProcessor = new ImageProcessor();
+            $image->paths = $imageProcessor->process($image);
+        } catch (ImageProcessingException $e) {
+            return [
+                'file' => [$e->getMessage()],
+            ];
+        }
 
         $image->save();
     }
