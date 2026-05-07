@@ -55,7 +55,7 @@ class ValidationSchema
     public function enum(array $acceptedValues, string $message = 'The %s is not a correct value')
     {
         return $this->addRule(function ($data) use ($acceptedValues) {
-            return in_array($data, $acceptedValues);
+            return in_array($data, $acceptedValues, true);
         }, $message);
     }
 
