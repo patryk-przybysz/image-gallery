@@ -25,9 +25,14 @@ class ImageProcessor
     {
         $this->initializeProperties($image);
 
-        return $this->addWatermark($image->watermark)
-            ->generateThumbnail()
-            ->moveToStorage();
+        try {
+            return $this->addWatermark($image->watermark)
+                ->generateThumbnail()
+                ->moveToStorage();
+        } catch (ImageProcessingException $e) {
+            $this->cleanupArtifacts();
+            throw $e;
+        }
     }
 
 
@@ -64,10 +69,22 @@ class ImageProcessor
     private function addWatermark(string $watermark)
     {
         $white = imagecolorallocate($this->img, 0xFF, 0xFF, 0xFF);
-        imagestring($this->img, 5, 20, 10, html_entity_decode($watermark), $white);
+        if ($white === false) {
+            throw new ImageProcessingException('Failed to allocate watermark color');
+        }
+
+        if (!imagestring($this->img, 5, 20, 10, html_entity_decode($watermark), $white)) {
+            throw new ImageProcessingException('Failed to apply watermark');
+        }
 
         $saveFn = "image{$this->ext}";
-        $saveFn($this->img, $this->full);
+        if (!function_exists($saveFn)) {
+            throw new ImageProcessingException('Image processing support is unavailable');
+        }
+
+        if (!$saveFn($this->img, $this->full)) {
+            throw new ImageProcessingException('Failed to store processed image');
+        }
 
         return $this;
     }
@@ -76,32 +93,39 @@ class ImageProcessor
     // https://salman-w.blogspot.com/2009/04/crop-to-fit-image-using-aspphp.html
     private function generateThumbnail()
     {
-
         $sourceWidth = imagesx($this->img);
         $sourceHeight = imagesy($this->img);
+
+        if ($sourceWidth <= 0 || $sourceHeight <= 0) {
+            throw new ImageProcessingException('Failed to read source image dimensions');
+        }
 
         $sourceAspectRatio = $sourceWidth / $sourceHeight;
         $thumbnailAspectRatio  = self::THUMBNAIL_WIDTH / self::THUMBNAIL_HEIGHT;
 
         if ($sourceAspectRatio > $thumbnailAspectRatio) {
-            // Image is wider
             $newHeight = $sourceHeight;
             $newWidth = (int)round($sourceHeight * $thumbnailAspectRatio);
             $x = (int)round(($sourceWidth - $newWidth) / 2);
             $y = 0;
         } else {
-            // Image is taller
             $newWidth = $sourceWidth;
             $newHeight = (int)round($sourceWidth / $thumbnailAspectRatio);
             $x = 0;
             $y = (int)round(($sourceHeight - $newHeight) / 2);
         }
 
-
         $thumbnail = imagecreatetruecolor(self::THUMBNAIL_WIDTH, self::THUMBNAIL_HEIGHT);
-        imagesavealpha($thumbnail, true);
+        if ($thumbnail === false) {
+            throw new ImageProcessingException('Failed to create thumbnail image');
+        }
 
-        imagecopyresampled(
+        if (!imagesavealpha($thumbnail, true)) {
+            imagedestroy($thumbnail);
+            throw new ImageProcessingException('Failed to preserve thumbnail transparency');
+        }
+
+        if (!imagecopyresampled(
             $thumbnail,
             $this->img,
             0,
@@ -112,11 +136,23 @@ class ImageProcessor
             self::THUMBNAIL_HEIGHT,
             $newWidth,
             $newHeight
-        );
-
+        )) {
+            imagedestroy($thumbnail);
+            throw new ImageProcessingException('Failed to generate thumbnail');
+        }
 
         $saveFn = "image{$this->ext}";
-        $saveFn($thumbnail, $this->thumbnail);
+        if (!function_exists($saveFn)) {
+            imagedestroy($thumbnail);
+            throw new ImageProcessingException('Image processing support is unavailable');
+        }
+
+        if (!$saveFn($thumbnail, $this->thumbnail)) {
+            imagedestroy($thumbnail);
+            throw new ImageProcessingException('Failed to store thumbnail image');
+        }
+
+        imagedestroy($thumbnail);
 
         return $this;
     }
@@ -127,6 +163,10 @@ class ImageProcessor
         $storagePath = self::STORAGE_PATH;
         $imageHash = sha1_file($this->full);
 
+        if ($imageHash === false) {
+            throw new ImageProcessingException('Failed to hash processed image');
+        }
+
         $imageFolderPath = "{$storagePath}/{$imageHash}";
 
         $this->ensureDirectory($imageFolderPath);
@@ -135,16 +175,21 @@ class ImageProcessor
         $fullPath = "{$imageFolderPath}/full.{$this->ext}";
         $thumbnailPath = "{$imageFolderPath}/thumbnail.{$this->ext}";
 
-        if (!move_uploaded_file($this->originalFile, $originalPath)) {
-            throw new ImageProcessingException('Failed to store original upload');
-        }
+        try {
+            if (!move_uploaded_file($this->originalFile, $originalPath)) {
+                throw new ImageProcessingException('Failed to store original upload');
+            }
 
-        if (!rename($this->full, $fullPath)) {
-            throw new ImageProcessingException('Failed to store processed image');
-        }
+            if (!rename($this->full, $fullPath)) {
+                throw new ImageProcessingException('Failed to store processed image');
+            }
 
-        if (!rename($this->thumbnail, $thumbnailPath)) {
-            throw new ImageProcessingException('Failed to store thumbnail image');
+            if (!rename($this->thumbnail, $thumbnailPath)) {
+                throw new ImageProcessingException('Failed to store thumbnail image');
+            }
+        } catch (ImageProcessingException $e) {
+            $this->cleanupArtifacts($imageFolderPath);
+            throw $e;
         }
 
         return [
@@ -152,6 +197,35 @@ class ImageProcessor
             'full' => "/images/{$imageHash}/full.{$this->ext}",
             'thumbnail' => "/images/{$imageHash}/thumbnail.{$this->ext}"
         ];
+    }
+
+    private function cleanupArtifacts(?string $imageFolderPath = null): void
+    {
+        if (is_file($this->full)) {
+            @unlink($this->full);
+        }
+
+        if (is_file($this->thumbnail)) {
+            @unlink($this->thumbnail);
+        }
+
+        if ($imageFolderPath !== null && is_dir($imageFolderPath)) {
+            $iterator = new \DirectoryIterator($imageFolderPath);
+
+            foreach ($iterator as $path) {
+                if ($path->isDot()) {
+                    continue;
+                }
+
+                @unlink($path->getPathname());
+            }
+
+            @rmdir($imageFolderPath);
+        }
+
+        if (is_resource($this->img) || $this->img instanceof \GdImage) {
+            imagedestroy($this->img);
+        }
     }
 
     private function ensureDirectory(string $path): void
