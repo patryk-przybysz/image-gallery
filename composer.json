@@ -1,12 +1,14 @@
 {
-  "name": "198329/gallery",
+  "name": "patryk-przybysz/image-gallery",
+  "description": "A PHP image gallery with authentication, uploads, watermarking, search, and pagination.",
+  "license": "MIT",
   "authors": [
     {
-      "name": "Patryk Przybysz",
-      "email": "s198329@student.pg.edu.pl"
+      "name": "Patryk Przybysz"
     }
   ],
   "require": {
+    "php": "^7.0",
     "mongodb/mongodb": "^1.1"
   },
   "autoload": {

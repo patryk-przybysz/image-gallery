@@ -44,6 +44,6 @@ try {
         'message' => $message,
         'code' => $code,
     ])->withLayout('main', [
-        'title' => "Gallery | Error"
+        'title' => "Image Gallery | Error"
     ]);
 }

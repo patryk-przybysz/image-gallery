@@ -12,10 +12,10 @@ require_once __DIR__ . "/../functions.php";
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="author" content="Patryk Przybysz, s198329">
+    <meta name="author" content="Patryk Przybysz">
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="/static/css/style.css">
-    <title>Gallery</title>
+    <title>Image Gallery</title>
 </head>
 
 <body>
@@ -27,7 +27,7 @@ require_once __DIR__ . "/../functions.php";
                             <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z" />
                             <circle cx="12" cy="13" r="3" />
                         </g>
-                    </svg>Photo Gallery</h1>
+                    </svg>Image Gallery</h1>
             </a>
         </div>
         <nav>
@@ -99,7 +99,7 @@ require_once __DIR__ . "/../functions.php";
         </nav>
     </header>
     <?= $_content ?>
-    <footer>&copy; Patryk Przybysz s198329</footer>
+    <footer>&copy; Patryk Przybysz</footer>
 </body>
 
 </html>

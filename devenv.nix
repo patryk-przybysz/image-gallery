@@ -24,14 +24,13 @@
     };
   };
 
-
   services.caddy = {
     enable = true;
     virtualHosts.":8080" = {
       extraConfig = ''
-          root public
-          php_fastcgi unix/${config.languages.php.fpm.pools.web.socket}
-          file_server
+        root public
+        php_fastcgi unix/${config.languages.php.fpm.pools.web.socket}
+        file_server
       '';
     };
   };
