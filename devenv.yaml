@@ -7,5 +7,5 @@ inputs:
     url: github:fossar/nix-phps
     inputs:
       nixpkgs:
-        follows: nixpkgs
+        follows: nixpkgs-unstable
 allowUnfree: true
