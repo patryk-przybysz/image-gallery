@@ -17,7 +17,7 @@
     },
     "files": [
       "./src/Utils/ArrayFunctions.php",
-      "./src/Utils/ViewFunctions.php"
+      "./resources/views/functions.php"
     ]
   },
   "config": {
