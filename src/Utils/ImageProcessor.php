@@ -8,7 +8,7 @@ use App\Models\Image;
 
 class ImageProcessor
 {
-    const STORAGE_PATH = __DIR__ . '/../web/images';
+    const STORAGE_PATH = __DIR__ . '/../../public/images';
 
     const THUMBNAIL_WIDTH = 200;
     const THUMBNAIL_HEIGHT = 125;
@@ -123,7 +123,7 @@ class ImageProcessor
         rename($this->thumbnail, $thumbnailPath);
 
         return [
-            'original' => "/images/{$imageHash}/full.{$this->ext}",
+            'original' => "/images/{$imageHash}/original.{$this->ext}",
             'full' => "/images/{$imageHash}/full.{$this->ext}",
             'thumbnail' => "/images/{$imageHash}/thumbnail.{$this->ext}"
         ];

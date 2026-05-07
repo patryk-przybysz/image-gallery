@@ -20,6 +20,7 @@ class Image extends Model
     public $file;
     /* The paths array containing 'original', 'full' and 'thumbnail' paths. */
     public $paths;
+    public $score;
     /** The name of the author as provided by the user in the form. 
      *  This string might be anything and is not always reliable
      * */
@@ -55,7 +56,7 @@ class Image extends Model
         return self::find($filter, $options);
     }
 
-    public static function getPaginatedPublicOrUserUploadedImages(User $user = null, int $page = 1, int $perPage = 10)
+    public static function getPaginatedPublicOrUserUploadedImages(?User $user = null, int $page = 1, int $perPage = 10)
     {
         $filter = [
             '$or' => [

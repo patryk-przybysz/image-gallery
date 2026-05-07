@@ -15,8 +15,11 @@ function format_errors(string $key, array $errors)
 // https://stackoverflow.com/a/2690541
 function time2str($ts)
 {
-    if (!ctype_digit($ts))
+    if (is_int($ts) || (is_string($ts) && ctype_digit($ts))) {
+        $ts = (int) $ts;
+    } else {
         $ts = strtotime($ts);
+    }
 
     $diff = time() - $ts;
     if ($diff == 0)

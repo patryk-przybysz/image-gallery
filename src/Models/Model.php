@@ -20,14 +20,18 @@ abstract class Model implements \MongoDB\BSON\Persistable
     }
 
     // TODO: fix id
-    public function bsonSerialize()
+    public function bsonSerialize(): array
     {
         return get_object_vars($this);
     }
 
-    public function bsonUnserialize(array $data)
+    public function bsonUnserialize(array $data): void
     {
         foreach ($data as $key => $value) {
+            if ($key === '__pclass') {
+                continue;
+            }
+
             $this->{$key} = $value;
         }
     }

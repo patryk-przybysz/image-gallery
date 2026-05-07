@@ -7,7 +7,7 @@
   languages.php = {
     enable = true;
     extensions = [ "mongodb" ];
-    version = "7.0";
+    version = "8.4";
     ini = ''
       display_errors = On
       error_reporting = E_ALL

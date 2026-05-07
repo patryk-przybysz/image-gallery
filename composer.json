@@ -8,8 +8,8 @@
     }
   ],
   "require": {
-    "php": "^7.0",
-    "mongodb/mongodb": "^1.1"
+    "php": "^8.4",
+    "mongodb/mongodb": "^2.2"
   },
   "autoload": {
     "psr-4": {

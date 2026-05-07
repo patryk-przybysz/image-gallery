@@ -12,7 +12,7 @@ A PHP image gallery built with a lightweight MVC-style architecture, featuring s
 ## Tech stack
 
 ### Runtime
-- PHP 7.0
+- PHP 8.4
 - MongoDB
 - Caddy
 

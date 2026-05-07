@@ -21,7 +21,11 @@ class Database
 
             self::$db = $client->selectDatabase('wai');
 
-            self::$db->images->createIndex(['title' => 'text'], ['background' => true]);
+            try {
+                self::$db->images->createIndex(['title' => 'text'], ['background' => true]);
+            } catch (\Throwable $e) {
+                // Ignore index creation failures on newer PHP/MongoDB extension combos.
+            }
         }
 
         return self::$db->selectCollection($collectionName);

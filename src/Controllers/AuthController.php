@@ -26,7 +26,7 @@ class AuthController
             if (!$errors) {
                 http_response_code(303);
                 header('Location: /');
-                return;
+                exit;
             }
         }
 
@@ -55,7 +55,7 @@ class AuthController
             if (empty_recursive($errors)) {
                 http_response_code(303);
                 header('Location: /');
-                return;
+                exit;
             }
         }
 
