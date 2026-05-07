@@ -2,13 +2,18 @@
 
 use App\Models\Image;
 
+function e(mixed $value): string
+{
+    return htmlspecialchars((string) $value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+}
+
 function format_errors(string $key, array $errors)
 {
     if ($key == 'file') {
         $errors[$key] = array_reduce($errors[$key] ?? [], 'array_merge', []);
     }
     if (!empty($errors[$key])) {
-        return '<span class="error">' . end($errors[$key]) . '</span>';
+        return '<span class="error" role="alert">' . e(end($errors[$key])) . '</span>';
     }
 }
 

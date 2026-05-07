@@ -3,17 +3,17 @@
         <div>
             <label for="title">Title:</label>
             <?= format_errors('title', $errors) ?>
-            <input type="text" id="title" name="title" value="<?= $form['title'] ?>">
+            <input type="text" id="title" name="title" value="<?= e($form['title']) ?>">
         </div>
         <div>
             <label for="watermark">Watermark:</label>
             <?= format_errors('watermark', $errors) ?>
-            <input type="text" id="watermark" name="watermark" value="<?= $form['watermark'] ?>">
+            <input type="text" id="watermark" name="watermark" value="<?= e($form['watermark']) ?>">
         </div>
         <div>
             <label for="author">Author:</label>
             <?= format_errors('author', $errors) ?>
-            <input type="text" id="author" name="author" value="<?= $form['author'] ?>">
+            <input type="text" id="author" name="author" value="<?= e($form['author']) ?>">
         </div>
         <div>
             <label for="visibility">Visibility:</label>

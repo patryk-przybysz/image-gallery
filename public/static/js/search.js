@@ -1,30 +1,50 @@
 let controller = null;
 
-let gallery = document.getElementById("gallery");
-let previousQ = "";
+const gallery = document.getElementById('gallery');
+const searchInput = document.getElementById('q');
+const status = document.getElementById('search-status');
+let previousQ = '';
 
-document.getElementById("q").addEventListener("keyup", (e) => {
-  let q = e.target.value;
+function setStatus(message) {
+  if (status) status.textContent = message;
+}
 
-  if (q == previousQ) return;
+searchInput.addEventListener('input', (e) => {
+  const q = e.target.value;
+
+  if (q === previousQ) return;
   previousQ = q;
 
   if (controller) {
     controller.abort();
   }
 
+  if (!q.trim()) {
+    gallery.innerHTML = '';
+    setStatus('Type to search the gallery.');
+    return;
+  }
+
+  setStatus('Searching…');
+  gallery.setAttribute('aria-busy', 'true');
   controller = new AbortController();
 
-  fetch("/api/search", {
-    method: "POST",
+  fetch('/api/search', {
+    method: 'POST',
     body: new URLSearchParams({ q }),
     signal: controller.signal,
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
   })
     .then((res) => res.text())
     .then((html) => {
       gallery.innerHTML = html;
+      gallery.removeAttribute('aria-busy');
+      setStatus(gallery.textContent.trim() ? `Showing results for “${q}”.` : 'No matches found.');
     })
-    // Silence the abort error
-    .catch(($e) => {});
+    .catch((error) => {
+      gallery.removeAttribute('aria-busy');
+      if (error.name !== 'AbortError') {
+        setStatus('Search failed. Please try again.');
+      }
+    });
 });

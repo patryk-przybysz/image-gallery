@@ -56,7 +56,7 @@ use App\Models\User;
                 </li>
                 <?php if (User::current()) : ?>
                     <li>
-                        <h2>Logged in as: <span id="login-display" class="truncatable">@<?= User::getName() ?></span></h2>
+                        <h2>Logged in as: <span id="login-display" class="truncatable">@<?= e(User::getName()) ?></span></h2>
                     </li>
                     <li>
                         <h2>
@@ -86,7 +86,7 @@ use App\Models\User;
                     <li>
                         <h2>
                             <a href="/auth/login">
-                                <svg xmlns=" http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
                                     <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4m-5-4l5-5l-5-5m5 5H3" />
                                 </svg>
                                 Login
