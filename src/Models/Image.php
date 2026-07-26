@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Exceptions\ImageProcessingException;
 use App\Utils\{FileHelper, ImageProcessor, Validation};
+
 use function App\Utils\empty_recursive;
 
 // https://www.mongodb.com/docs/php-library/v1.1/reference/bson/#persistable-classes
@@ -22,11 +23,11 @@ class Image extends Model
     /* The paths array containing 'original', 'full' and 'thumbnail' paths. */
     public $paths;
     public $score;
-    /** The name of the author as provided by the user in the form. 
+    /** The name of the author as provided by the user in the form.
      *  This string might be anything and is not always reliable
      * */
     public $author;
-    /** The inner user ID reference for private photos. 
+    /** The inner user ID reference for private photos.
      *  This field is set only if the visibility is 'private'.
      */
     public $privateAuthorId;

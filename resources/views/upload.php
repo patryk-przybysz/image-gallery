@@ -17,8 +17,12 @@
         </div>
         <div>
             <label for="visibility">Visibility:</label>
-            <input type="radio" title="public" name="visibility" value="public" <?php if ($form['visibility'] !== 'private') echo 'checked' ?>>Public</input>
-            <input type="radio" title="private" name="visibility" value="private" <?php if ($form['visibility'] === 'private') echo 'checked' ?>>Private</input>
+            <input type="radio" title="public" name="visibility" value="public" <?php if ($form['visibility'] !== 'private') {
+                echo 'checked';
+            } ?>>Public</input>
+            <input type="radio" title="private" name="visibility" value="private" <?php if ($form['visibility'] === 'private') {
+                echo 'checked';
+            } ?>>Private</input>
             <?= format_errors('visibility', $errors) ?>
         </div>
         <div>

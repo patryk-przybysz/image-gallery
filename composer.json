@@ -13,7 +13,9 @@
     "chubbyphp/chubbyphp-parsing": "^2.8"
   },
   "require-dev": {
-    "pestphp/pest": "^4.0"
+    "pestphp/pest": "^4.0",
+    "phpstan/phpstan": "^2.2",
+    "laravel/pint": "^1.29"
   },
   "autoload": {
     "psr-4": {
@@ -31,7 +33,10 @@
   },
   "scripts": {
     "test": "pest",
-    "test:unit": "pest --group=unit"
+    "test:unit": "pest --group=unit",
+    "analyse": "phpstan analyse",
+    "format": "pint",
+    "format:check": "pint --test"
   },
   "config": {
     "optimize-autoloader": true,

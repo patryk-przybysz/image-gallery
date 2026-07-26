@@ -20,7 +20,7 @@ class View
 
     public static function make(string $view, array $params = [])
     {
-        return new static($view, $params);
+        return new self($view, $params);
     }
 
     public function withLayout(string $layout)

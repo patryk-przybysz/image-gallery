@@ -72,8 +72,21 @@ composer test:unit
 
 That runs the `unit` group only. `composer test` runs the full Pest suite.
 
+## Static analysis and formatting
+
+[PHPStan](https://phpstan.org/) (level 5 on `src` and `public`) and [Laravel Pint](https://laravel.com/docs/pint) (PSR-12 preset across the PHP tree) are available via Composer:
+
+```bash
+composer analyse
+composer format:check
+composer format
+```
+
+`analyse` runs PHPStan. `format:check` fails if style drifts; `format` applies Pint fixes.
+
 ## Future improvements
 - Expand automated tests and CI beyond the unit suite
+- Raise PHPStan level and tighten Pint coverage over time
 - Harden output escaping, sessions, and uploads
 - Continue separating controllers, services, and repositories
 - Polish the responsive UI and accessibility

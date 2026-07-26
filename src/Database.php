@@ -22,7 +22,7 @@ class Database
             self::$db = $client->selectDatabase('wai');
 
             try {
-                self::$db->images->createIndex(['title' => 'text'], ['background' => true]);
+                self::$db->selectCollection('images')->createIndex(['title' => 'text'], ['background' => true]);
             } catch (\Throwable $e) {
                 // Ignore index creation failures on newer PHP/MongoDB extension combos.
             }

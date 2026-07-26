@@ -9,10 +9,10 @@ use App\Models\Image;
 
 class ImageProcessor
 {
-    const STORAGE_PATH = __DIR__ . '/../../public/images';
+    public const STORAGE_PATH = __DIR__ . '/../../public/images';
 
-    const THUMBNAIL_WIDTH = 200;
-    const THUMBNAIL_HEIGHT = 125;
+    public const THUMBNAIL_WIDTH = 200;
+    public const THUMBNAIL_HEIGHT = 125;
 
     private $originalFile;
     private $ext;
