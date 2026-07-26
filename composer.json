@@ -29,11 +29,15 @@
   "autoload-dev": {
     "psr-4": {
       "Tests\\": "tests/"
-    }
+    },
+    "files": [
+      "./tests/Support/http.php"
+    ]
   },
   "scripts": {
     "test": "pest",
     "test:unit": "pest --group=unit",
+    "test:http": "pest --group=http",
     "analyse": "phpstan analyse",
     "format": "pint",
     "format:check": "pint --test"

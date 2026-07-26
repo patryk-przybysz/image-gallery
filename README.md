@@ -64,13 +64,30 @@ This project is designed to run inside a devenv shell. The MongoDB connection va
 
 ## Tests
 
+### Unit
+
 Unit tests use [Pest](https://pestphp.com/) and do not need MongoDB, Caddy, or `devenv up`.
 
 ```bash
 composer test:unit
 ```
 
-That runs the `unit` group only. `composer test` runs the full Pest suite.
+### HTTP
+
+HTTP smoke tests hit the real app over the network (Caddy + PHP-FPM + MongoDB). They require the devenv processes to be running (`devenv up`). If the stack is down, failures report a clear readiness/connectivity error instead of opaque assertion noise.
+
+```bash
+devenv up   # in another terminal, if not already running
+composer test:http
+```
+
+Base URL defaults to `http://127.0.0.1:8080`. Override with `HTTP_BASE_URL` when needed:
+
+```bash
+HTTP_BASE_URL=http://127.0.0.1:8080 composer test:http
+```
+
+`composer test` runs the full Pest suite (unit + http). Prefer `composer test:unit` when the stack is not up.
 
 ## Static analysis and formatting
 
@@ -85,7 +102,7 @@ composer format
 `analyse` runs PHPStan. `format:check` fails if style drifts; `format` applies Pint fixes.
 
 ## Future improvements
-- Expand automated tests and CI beyond the unit suite
+- Expand HTTP tests beyond smoke coverage (auth/upload/search flows) and wire CI
 - Raise PHPStan level and tighten Pint coverage over time
 - Harden output escaping, sessions, and uploads
 - Continue separating controllers, services, and repositories
