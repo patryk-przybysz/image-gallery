@@ -62,8 +62,18 @@ This project is designed to run inside a devenv shell. The MongoDB connection va
    ```
 6. Open the app at [http://localhost:8080](http://localhost:8080)
 
+## Tests
+
+Unit tests use [Pest](https://pestphp.com/) and do not need MongoDB, Caddy, or `devenv up`.
+
+```bash
+composer test:unit
+```
+
+That runs the `unit` group only. `composer test` runs the full Pest suite.
+
 ## Future improvements
-- Add automated tests and CI
+- Expand automated tests and CI beyond the unit suite
 - Harden output escaping, sessions, and uploads
 - Continue separating controllers, services, and repositories
 - Polish the responsive UI and accessibility
