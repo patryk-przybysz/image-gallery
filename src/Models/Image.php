@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Exceptions\ImageProcessingException;
-use App\Utils\{FileHelper, ImageProcessor, Validation};
+use App\Utils\{FileHelper, ImageProcessor};
+use Chubbyphp\Parsing\Error;
+use Chubbyphp\Parsing\ErrorsException;
+use Chubbyphp\Parsing\Parser;
 
 use function App\Utils\empty_recursive;
 
@@ -93,43 +96,60 @@ class Image extends Model
 
     private static function validate(array $data)
     {
-        $p = Validation::parser();
+        $p = new Parser();
 
-        $visibilitySchema = Validation::refine(
-            Validation::oneOf(
-                Validation::requiredString('Please select the visibility setting'),
-                ['public', 'private'],
-                'Visibility can only be public or private',
-            ),
-            static fn (string $visibility): bool => !($visibility === 'private' && !User::current()),
-            'Anonymous users can only upload public images',
-        );
+        $schema = $p->assoc([
+            'title' => $p->string()->default('')->postParse(static function (string $title) {
+                if ($title === '') {
+                    throw new ErrorsException(new Error('required', 'Provide a title for the image', []));
+                }
 
-        $fileErrorSchema = Validation::refine(
-            Validation::refine(
-                $p->int(),
-                static fn (int $error): bool => $error != UPLOAD_ERR_NO_FILE,
-                'No file sent',
-            ),
-            static fn (int $error): bool => $error != UPLOAD_ERR_INI_SIZE && $error != UPLOAD_ERR_FORM_SIZE,
-            'Exceeded 1MB filesize limit',
-        );
+                return $title;
+            }),
+            'watermark' => $p->string()->default('')->postParse(static function (string $watermark) {
+                if ($watermark === '') {
+                    throw new ErrorsException(new Error('required', 'Provide a watermark', []));
+                }
 
-        $tmpFileSchema = Validation::refine(
-            $p->string(),
-            static fn (string $tmpName): bool => FileHelper::isImage($tmpName),
-            'Invalid file format',
-        );
+                return $watermark;
+            }),
+            'visibility' => $p->string()->default('')->postParse(static function (string $visibility) {
+                if ($visibility === '') {
+                    throw new ErrorsException(new Error('required', 'Please select the visibility setting', []));
+                }
+                if (!in_array($visibility, ['public', 'private'], true)) {
+                    throw new ErrorsException(new Error('enum', 'Visibility can only be public or private', []));
+                }
+                if ($visibility === 'private' && !User::current()) {
+                    throw new ErrorsException(new Error('auth', 'Anonymous users can only upload public images', []));
+                }
 
-        return Validation::errors($p->assoc([
-            'title' => Validation::requiredString('Provide a title for the image'),
-            'watermark' => Validation::requiredString('Provide a watermark'),
-            'visibility' => $visibilitySchema,
+                return $visibility;
+            }),
             'file' => $p->assoc([
-                'error' => $fileErrorSchema,
-                'tmp_name' => $tmpFileSchema,
+                'error' => $p->int()->postParse(static function (int $error) {
+                    if ($error == UPLOAD_ERR_NO_FILE) {
+                        throw new ErrorsException(new Error('upload', 'No file sent', []));
+                    }
+                    if ($error == UPLOAD_ERR_INI_SIZE || $error == UPLOAD_ERR_FORM_SIZE) {
+                        throw new ErrorsException(new Error('upload', 'Exceeded 1MB filesize limit', []));
+                    }
+
+                    return $error;
+                }),
+                'tmp_name' => $p->string()->postParse(static function (string $tmpName) {
+                    if (!FileHelper::isImage($tmpName)) {
+                        throw new ErrorsException(new Error('upload', 'Invalid file format', []));
+                    }
+
+                    return $tmpName;
+                }),
             ]),
-        ]), $data);
+        ]);
+
+        $result = $schema->safeParse($data);
+
+        return $result->success ? [] : $result->exception->errors->toTree();
     }
 
 

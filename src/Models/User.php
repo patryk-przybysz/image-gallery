@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Utils\Validation;
+use Chubbyphp\Parsing\Error;
+use Chubbyphp\Parsing\ErrorsException;
+use Chubbyphp\Parsing\Parser;
 
 use function App\Utils\empty_recursive;
 
@@ -45,56 +47,86 @@ class User extends Model
 
     public static function validateLogin(array $data)
     {
-        $p = Validation::parser();
+        $p = new Parser();
 
-        return Validation::errors($p->assoc([
-            'login' => Validation::requiredString('Please enter the login'),
-            'password' => Validation::minLength(
-                Validation::requiredString('Please enter the password'),
-                8,
-                'The password must have at least 8 characters',
-            ),
-        ]), $data);
+        $schema = $p->assoc([
+            'login' => $p->string()->default('')->postParse(static function (string $login) {
+                if ($login === '') {
+                    throw new ErrorsException(new Error('required', 'Please enter the login', []));
+                }
+
+                return $login;
+            }),
+            'password' => $p->string()->default('')->postParse(static function (string $password) {
+                if ($password === '') {
+                    throw new ErrorsException(new Error('required', 'Please enter the password', []));
+                }
+                if (strlen($password) < 8) {
+                    throw new ErrorsException(new Error('string.minLength', 'The password must have at least 8 characters', []));
+                }
+
+                return $password;
+            }),
+        ]);
+
+        $result = $schema->safeParse($data);
+
+        return $result->success ? [] : $result->exception->errors->toTree();
     }
 
     public static function validateRegister(array $data)
     {
-        $p = Validation::parser();
+        $p = new Parser();
 
-        $emailSchema = Validation::refine(
-            Validation::requiredString('Please enter the email'),
-            static fn (string $email): bool => empty(User::findOne(['email' => $email])),
-            'Email is taken',
-        );
+        $schema = $p->assoc([
+            'email' => $p->string()->default('')->postParse(static function (string $email) {
+                if ($email === '') {
+                    throw new ErrorsException(new Error('required', 'Please enter the email', []));
+                }
+                if (!empty(User::findOne(['email' => $email]))) {
+                    throw new ErrorsException(new Error('unique', 'Email is taken', []));
+                }
 
-        $loginSchema = Validation::refine(
-            Validation::requiredString('Please enter the login'),
-            static fn (string $login): bool => empty(User::findOne(['login' => $login])),
-            'Login is taken',
-        );
+                return $email;
+            }),
+            'login' => $p->string()->default('')->postParse(static function (string $login) {
+                if ($login === '') {
+                    throw new ErrorsException(new Error('required', 'Please enter the login', []));
+                }
+                if (!empty(User::findOne(['login' => $login]))) {
+                    throw new ErrorsException(new Error('unique', 'Login is taken', []));
+                }
 
-        $passwordSchema = Validation::minLength(
-            Validation::requiredString('Please enter the password'),
-            8,
-            'The password must have at least 8 characters',
-        );
+                return $login;
+            }),
+            'password' => $p->string()->default('')->postParse(static function (string $password) {
+                if ($password === '') {
+                    throw new ErrorsException(new Error('required', 'Please enter the password', []));
+                }
+                if (strlen($password) < 8) {
+                    throw new ErrorsException(new Error('string.minLength', 'The password must have at least 8 characters', []));
+                }
 
-        $repeatPasswordSchema = Validation::refine(
-            Validation::minLength(
-                Validation::requiredString('Please repeat the password'),
-                8,
-                'The password must have at least 8 characters',
-            ),
-            static fn (string $repeatPassword): bool => $repeatPassword == ($data['password'] ?? null),
-            'Password does not match repeated password',
-        );
+                return $password;
+            }),
+            'repeatPassword' => $p->string()->default('')->postParse(static function (string $repeatPassword) use ($data) {
+                if ($repeatPassword === '') {
+                    throw new ErrorsException(new Error('required', 'Please repeat the password', []));
+                }
+                if (strlen($repeatPassword) < 8) {
+                    throw new ErrorsException(new Error('string.minLength', 'The password must have at least 8 characters', []));
+                }
+                if ($repeatPassword != ($data['password'] ?? null)) {
+                    throw new ErrorsException(new Error('match', 'Password does not match repeated password', []));
+                }
 
-        return Validation::errors($p->assoc([
-            'email' => $emailSchema,
-            'login' => $loginSchema,
-            'password' => $passwordSchema,
-            'repeatPassword' => $repeatPasswordSchema,
-        ]), $data);
+                return $repeatPassword;
+            }),
+        ]);
+
+        $result = $schema->safeParse($data);
+
+        return $result->success ? [] : $result->exception->errors->toTree();
     }
 
     public static function register(array $data)
