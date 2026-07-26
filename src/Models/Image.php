@@ -95,18 +95,12 @@ class Image extends Model
         $p = Validation::parser();
 
         $visibilitySchema = Validation::refine(
-            Validation::refine(
+            Validation::oneOf(
                 Validation::requiredString('Please select the visibility setting'),
-                static fn (string $visibility): bool => in_array($visibility, ['public', 'private'], true),
+                ['public', 'private'],
                 'Visibility can only be public or private',
             ),
-            static function (string $visibility): bool {
-                if ($visibility === 'private' && !User::current()) {
-                    return false;
-                }
-
-                return true;
-            },
+            static fn (string $visibility): bool => !($visibility === 'private' && !User::current()),
             'Anonymous users can only upload public images',
         );
 

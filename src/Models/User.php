@@ -47,15 +47,13 @@ class User extends Model
     {
         $p = Validation::parser();
 
-        $passwordSchema = Validation::refine(
-            Validation::requiredString('Please enter the password'),
-            static fn (string $password): bool => strlen($password) >= 8,
-            'The password must have at least 8 characters',
-        );
-
         return Validation::errors($p->assoc([
             'login' => Validation::requiredString('Please enter the login'),
-            'password' => $passwordSchema,
+            'password' => Validation::minLength(
+                Validation::requiredString('Please enter the password'),
+                8,
+                'The password must have at least 8 characters',
+            ),
         ]), $data);
     }
 
@@ -65,30 +63,26 @@ class User extends Model
 
         $emailSchema = Validation::refine(
             Validation::requiredString('Please enter the email'),
-            static function (string $email): bool {
-                return empty(User::findOne(['email' => $email]));
-            },
+            static fn (string $email): bool => empty(User::findOne(['email' => $email])),
             'Email is taken',
         );
 
         $loginSchema = Validation::refine(
             Validation::requiredString('Please enter the login'),
-            static function (string $login): bool {
-                return empty(User::findOne(['login' => $login]));
-            },
+            static fn (string $login): bool => empty(User::findOne(['login' => $login])),
             'Login is taken',
         );
 
-        $passwordSchema = Validation::refine(
+        $passwordSchema = Validation::minLength(
             Validation::requiredString('Please enter the password'),
-            static fn (string $password): bool => strlen($password) >= 8,
+            8,
             'The password must have at least 8 characters',
         );
 
         $repeatPasswordSchema = Validation::refine(
-            Validation::refine(
+            Validation::minLength(
                 Validation::requiredString('Please repeat the password'),
-                static fn (string $password): bool => strlen($password) >= 8,
+                8,
                 'The password must have at least 8 characters',
             ),
             static fn (string $repeatPassword): bool => $repeatPassword == ($data['password'] ?? null),
