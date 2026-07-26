@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Utils\ValidationSchema;
+use App\Utils\Validation;
 
 use function App\Utils\empty_recursive;
 
@@ -45,62 +45,62 @@ class User extends Model
 
     public static function validateLogin(array $data)
     {
-        $schema = new ValidationSchema();
+        $p = Validation::parser();
 
-        $loginSchema = (new ValidationSchema())
-            ->string()
-            ->required('Please enter the login');
+        $passwordSchema = Validation::refine(
+            Validation::requiredString('Please enter the password'),
+            static fn (string $password): bool => strlen($password) >= 8,
+            'The password must have at least 8 characters',
+        );
 
-        $passwordSchema = (new ValidationSchema())
-            ->string()
-            ->required('Please enter the password')
-            ->minLength(8, 'The password must have at least 8 characters');
-
-        return $schema->array([
-            'login' => $loginSchema,
+        return Validation::errors($p->assoc([
+            'login' => Validation::requiredString('Please enter the login'),
             'password' => $passwordSchema,
-        ])->safeParse($data);
+        ]), $data);
     }
 
     public static function validateRegister(array $data)
     {
-        $schema = new ValidationSchema();
+        $p = Validation::parser();
 
-        $emailSchema = (new ValidationSchema())
-            ->string()
-            ->refine(function ($email) {
-                $users = User::findOne(['email' => $email]);
-                return empty($users);
-            }, 'Email is taken')
-            ->required('Please enter the email');
+        $emailSchema = Validation::refine(
+            Validation::requiredString('Please enter the email'),
+            static function (string $email): bool {
+                return empty(User::findOne(['email' => $email]));
+            },
+            'Email is taken',
+        );
 
-        $loginSchema = (new ValidationSchema())
-            ->string()
-            ->required('Please enter the login')
-            ->refine(function ($login) {
-                $users = User::findOne(['login' => $login]);
-                return empty($users);
-            }, 'Login is taken');
+        $loginSchema = Validation::refine(
+            Validation::requiredString('Please enter the login'),
+            static function (string $login): bool {
+                return empty(User::findOne(['login' => $login]));
+            },
+            'Login is taken',
+        );
 
-        $passwordSchema = (new ValidationSchema())
-            ->string()
-            ->required('Please enter the password')
-            ->minLength(8, 'The password must have at least 8 characters');
+        $passwordSchema = Validation::refine(
+            Validation::requiredString('Please enter the password'),
+            static fn (string $password): bool => strlen($password) >= 8,
+            'The password must have at least 8 characters',
+        );
 
-        $repeatPasswordSchema = (new ValidationSchema())
-            ->string()
-            ->required('Please repeat the password')
-            ->minLength(8, 'The password must have at least 8 characters')
-            ->refine(function ($repeatPassword) use ($data) {
-                return $repeatPassword == $data['password'];
-            }, 'Password does not match repeated password');
+        $repeatPasswordSchema = Validation::refine(
+            Validation::refine(
+                Validation::requiredString('Please repeat the password'),
+                static fn (string $password): bool => strlen($password) >= 8,
+                'The password must have at least 8 characters',
+            ),
+            static fn (string $repeatPassword): bool => $repeatPassword == ($data['password'] ?? null),
+            'Password does not match repeated password',
+        );
 
-        return $schema->array([
+        return Validation::errors($p->assoc([
             'email' => $emailSchema,
             'login' => $loginSchema,
             'password' => $passwordSchema,
             'repeatPassword' => $repeatPasswordSchema,
-        ])->safeParse($data);
+        ]), $data);
     }
 
     public static function register(array $data)

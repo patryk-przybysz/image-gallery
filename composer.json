@@ -9,7 +9,8 @@
   ],
   "require": {
     "php": "^8.4",
-    "mongodb/mongodb": "^2.2"
+    "mongodb/mongodb": "^2.2",
+    "chubbyphp/chubbyphp-parsing": "^2.8"
   },
   "require-dev": {
     "pestphp/pest": "^4.0"

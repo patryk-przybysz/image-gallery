@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Exceptions\ImageProcessingException;
-use App\Utils\{FileHelper, ImageProcessor, ValidationSchema};
+use App\Utils\{FileHelper, ImageProcessor, Validation};
 use function App\Utils\empty_recursive;
 
 // https://www.mongodb.com/docs/php-library/v1.1/reference/bson/#persistable-classes
@@ -92,54 +92,49 @@ class Image extends Model
 
     private static function validate(array $data)
     {
-        $schema = new ValidationSchema();
+        $p = Validation::parser();
 
-        $titleSchema = (new ValidationSchema())
-            ->string()
-            ->required('Provide a title for the image');
-
-        $watermarkSchema = (new ValidationSchema())
-            ->string()
-            ->required("Provide a watermark");
-
-        $visibilitySchema = (new ValidationSchema())
-            ->string()
-            ->required('Please select the visibility setting')
-            ->enum(['public', 'private'], 'Visibility can only be public or private')
-            ->refine(function ($visibility) {
-                $user = User::current();
-                if ($visibility === "private" && !$user) {
+        $visibilitySchema = Validation::refine(
+            Validation::refine(
+                Validation::requiredString('Please select the visibility setting'),
+                static fn (string $visibility): bool => in_array($visibility, ['public', 'private'], true),
+                'Visibility can only be public or private',
+            ),
+            static function (string $visibility): bool {
+                if ($visibility === 'private' && !User::current()) {
                     return false;
                 }
+
                 return true;
-            }, 'Anonymous users can only upload public images');
+            },
+            'Anonymous users can only upload public images',
+        );
 
-        $fileErrorSchema = (new ValidationSchema())
-            ->refine(function ($error) {
-                return $error != UPLOAD_ERR_NO_FILE;
-            }, 'No file sent')
-            ->refine(function ($error) {
-                return $error != UPLOAD_ERR_INI_SIZE && $error != UPLOAD_ERR_FORM_SIZE;
-            }, 'Exceeded 1MB filesize limit');
+        $fileErrorSchema = Validation::refine(
+            Validation::refine(
+                $p->int(),
+                static fn (int $error): bool => $error != UPLOAD_ERR_NO_FILE,
+                'No file sent',
+            ),
+            static fn (int $error): bool => $error != UPLOAD_ERR_INI_SIZE && $error != UPLOAD_ERR_FORM_SIZE,
+            'Exceeded 1MB filesize limit',
+        );
 
+        $tmpFileSchema = Validation::refine(
+            $p->string(),
+            static fn (string $tmpName): bool => FileHelper::isImage($tmpName),
+            'Invalid file format',
+        );
 
-        $tmpFileSchema = (new ValidationSchema())
-            ->refine(function ($tmpName) {
-                return FileHelper::isImage($tmpName);
-            }, 'Invalid file format');
-
-        $fileSchema = (new ValidationSchema())
-            ->array([
+        return Validation::errors($p->assoc([
+            'title' => Validation::requiredString('Provide a title for the image'),
+            'watermark' => Validation::requiredString('Provide a watermark'),
+            'visibility' => $visibilitySchema,
+            'file' => $p->assoc([
                 'error' => $fileErrorSchema,
                 'tmp_name' => $tmpFileSchema,
-            ]);
-
-        return $schema->array([
-            'title' => $titleSchema,
-            'watermark' => $watermarkSchema,
-            'visibility' => $visibilitySchema,
-            'file' => $fileSchema,
-        ])->safeParse($data);
+            ]),
+        ]), $data);
     }
 
 

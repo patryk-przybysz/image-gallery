@@ -4,8 +4,74 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "17d25042ad2176bb0669a7d8b6b6ec6b",
+    "content-hash": "4fd2bcd448ff3e09208a09f31c4b34e0",
     "packages": [
+        {
+            "name": "chubbyphp/chubbyphp-parsing",
+            "version": "2.8.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/chubbyphp/chubbyphp-parsing.git",
+                "reference": "70b04dfc3d1df0410360c3a4c7ebc86c8a7268a1"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/chubbyphp/chubbyphp-parsing/zipball/70b04dfc3d1df0410360c3a4c7ebc86c8a7268a1",
+                "reference": "70b04dfc3d1df0410360c3a4c7ebc86c8a7268a1",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.3"
+            },
+            "require-dev": {
+                "chubbyphp/chubbyphp-dev-helper": "dev-master",
+                "infection/infection": "^0.34.0",
+                "php-coveralls/php-coveralls": "^2.9.1",
+                "phpstan/extension-installer": "^1.4.3",
+                "phpstan/phpstan": "^2.2.5",
+                "phpunit/phpunit": "^12.5.30",
+                "respect/validation": "^2.4.12"
+            },
+            "suggest": {
+                "ext-intl": "If your interested in using idnEmail() or idnHostname() of the StringSchema, please install the intl extension",
+                "respect/validation": "If your interested in using the respect/validation, please install it with ^2.4.12"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.8-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Chubbyphp\\Parsing\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Dominik Zogg",
+                    "email": "dominik.zogg@gmail.com"
+                }
+            ],
+            "description": "Allows parsing data of various structures, meaning the population and validation of data into a defined structure. For example, converting an API request into a Data Transfer Object (DTO).",
+            "keywords": [
+                "chubbyphp",
+                "dto",
+                "parsing",
+                "population",
+                "validation",
+                "zod"
+            ],
+            "support": {
+                "issues": "https://github.com/chubbyphp/chubbyphp-parsing/issues",
+                "source": "https://github.com/chubbyphp/chubbyphp-parsing/tree/2.8.0"
+            },
+            "time": "2026-07-07T19:47:35+00:00"
+        },
         {
             "name": "mongodb/mongodb",
             "version": "2.2.0",
